@@ -1,0 +1,6 @@
+@SolaizeApi_HostAddress = http://localhost:5180
+
+GET {{SolaizeApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

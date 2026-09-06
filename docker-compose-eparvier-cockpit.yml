@@ -1,0 +1,19 @@
+services:
+  eparvier-cockpit:
+    image: solaizecockpit
+    container_name: eparvier-cockpit
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      API_URL: "http://eparvier-api:8080"
+
+    ports:
+      - "5011:8080"
+
+    networks:
+      - eparvier-net
+
+networks:
+  eparvier-net:
+    external: true

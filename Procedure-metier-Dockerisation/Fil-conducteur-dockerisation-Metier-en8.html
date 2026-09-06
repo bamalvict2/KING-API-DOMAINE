@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>File Conducteur – Dockerisation API Métier .NET 8</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#0d0d0d; color:#e6e6e6; padding:20px; }
+    h1, h2 { color:#ffcc66; }
+    .section { border:1px solid #333; padding:15px; border-radius:8px; margin-bottom:20px; }
+    pre { background:#1a1a1a; padding:10px; border-radius:6px; overflow-x:auto; }
+    code { color:#9effa1; }
+    .path { color:#7fd1ff; }
+  </style>
+</head>
+<body>
+
+<h1>File Conducteur – Dockerisation API Métier .NET 8</h1>
+<p>Ce document explique l’imbrication complète : <strong>Code → Dockerfile → Image → Compose → Conteneur</strong>.</p>
+
+<div class="section">
+  <h2>1. Code .NET 8 – API Métier</h2>
+  <p>Structure typique :</p>
+  <pre><code>EPARVIER.Metier/
+  ├─ Controllers/
+  ├─ Program.cs
+  ├─ EPARVIER.Metier.csproj
+  └─ Dockerfile
+</code></pre>
+  <p>Le <strong>Dockerfile</strong> est la recette pour transformer ton projet en image Docker.</p>
+</div>
+
+<div class="section">
+  <h2>2. Dockerfile – Construction de l’image</h2>
+  <p>Exemple pour une API .NET 8 :</p>
+  <pre><code>FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+WORKDIR /app
+EXPOSE 8080
+
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+COPY . .
+RUN dotnet restore
+RUN dotnet publish -c Release -o /app/publish
+
+FROM base AS final
+WORKDIR /app
+COPY --from=build /app/publish .
+ENTRYPOINT ["dotnet", "EPARVIER.Metier.dll"]
+</code></pre>
+
+  <p><strong>Build de l’image :</strong></p>
+  <pre><code>docker build -t eparvier-metier:2026-07-17 .</code></pre>
+  <p>Résultat : une image locale <code>eparvier-metier:2026-07-17</code>.</p>
+</div>
+
+<div class="section">
+  <h2>3. docker-compose.yml – Architecture du module</h2>
+  <p>Localisation KING‑AO :</p>
+  <p class="path">/opt/KING-AO/modules/EPARVIER/compose/docker-compose.yml</p>
+
+  <pre><code>version: "3.9"
+
+services:
+  eparvier-metier:
+    image: eparvier-metier:2026-07-17
+    container_name: eparvier-metier
+    ports:
+      - "5001:8080"
+    networks:
+      - kingao-net
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+
+networks:
+  kingao-net:
+    external: true
+</code></pre>
+
+  <p>Le compose <strong>n’effectue pas le build</strong> : il utilise l’image déjà créée.</p>
+</div>
+
+<div class="section">
+  <h2>4. Lancement du module</h2>
+  <p>Commande KING‑AO :</p>
+  <pre><code>docker compose -f /opt/KING-AO/modules/EPARVIER/compose/docker-compose.yml up -d</code></pre>
+
+  <p>Ce que fait <code>up -d</code> :</p>
+  <ul>
+    <li>Lit le fichier compose</li>
+    <li>Vérifie l’image <code>eparvier-metier:2026-07-17</code></li>
+    <li>Crée le conteneur</li>
+    <li>Le connecte au réseau KING‑AO</li>
+    <li>Lance l’API métier</li>
+  </ul>
+</div>
+
+<div class="section">
+  <h2>5. Vue d’ensemble – Imbrication complète</h2>
+  <pre><code>Code .NET 8 (EPARVIER.Metier.csproj)
+        │
+        ├─ Dockerfile
+        │    └─ docker build → image eparvier-metier:TAG
+        │
+        └─ docker-compose.yml (module EPARVIER)
+             └─ docker compose up -d
+                  └─ conteneur eparvier-metier
+</code></pre>
+
+  <p><strong>Règle d’or :</strong> si le PATH du compose est faux, KING‑AO ne voit pas le module.</p>
+</div>
+
+</body>
+</html>
+
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Architecture KING-AO complète</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#0d0d0d; color:#e6e6e6; padding:20px; }
+    h1, h2 { color:#ffcc66; }
+    .section { border:1px solid #333; padding:15px; border-radius:8px; margin-bottom:20px; }
+    pre { background:#1a1a1a; padding:10px; border-radius:6px; overflow-x:auto; }
+    .module { color:#7fd1ff; }
+  </style>
+</head>
+<body>
+
+<h1>Architecture KING-AO complète</h1>
+<p>Vue d’ensemble des modules, de leurs rôles et de leurs connexions dans l’architecture dockerisée.</p>
+
+<div class="section">
+  <h2>1. Modules principaux</h2>
+  <pre><code>NGINX        → Reverse proxy / entrée HTTP(S)
+PORTAL       → Front web (UI)
+EPARVIER     → API métier (.NET 8)
+KINGDOMAINE  → API référentiels / domaines
+Monitoring   → Prometheus + Grafana
+Réseau       → kingao-net (réseau Docker partagé)
+</code></pre>
+</div>
+
+<div class="section">
+  <h2>2. Flux de requêtes</h2>
+  <pre><code>Client (navigateur)
+    │
+    ▼
+NGINX (reverse proxy)
+    │
+    ├─&gt; PORTAL (front web)
+    │       │
+    │       ├─&gt; EPARVIER (API métier)
+    │       └─&gt; KINGDOMAINE (API référentiels)
+    │
+    └─&gt; APIs directes (EPARVIER / KINGDOMAINE) si besoin
+</code></pre>
+</div>
+
+<div class="section">
+  <h2>3. Réseau Docker – kingao-net</h2>
+  <p>Tous les services sont connectés au même réseau :</p>
+  <pre><code>networks:
+  kingao-net:
+    external: true
+</code></pre>
+  <p>Chaque service dans son compose :</p>
+  <pre><code>services:
+  nginx:
+    image: kingao-nginx:TAG
+    networks:
+      - kingao-net
+
+  portal:
+    image: kingao-portal:TAG
+    networks:
+      - kingao-net
+
+  eparvier-metier:
+    image: eparvier-metier:TAG
+    networks:
+      - kingao-net
+
+  kingdomaine-api:
+    image: kingdomaine-api:TAG
+    networks:
+      - kingao-net
+
+  prometheus:
+    image: prom/prometheus:latest
+    networks:
+      - kingao-net
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      - kingao-net
+</code></pre>
+</div>
+
+<div class="section">
+  <h2>4. Organisation des fichiers KING-AO</h2>
+  <pre><code>/opt/KING-AO/modules/
+  ├─ EPARVIER/
+  │    ├─ src/              (code .NET 8)
+  │    ├─ Dockerfile
+  │    └─ compose/docker-compose.yml
+  ├─ KINGDOMAINE/
+  │    ├─ src/
+  │    ├─ Dockerfile
+  │    └─ compose/docker-compose.yml
+  ├─ PORTAL/
+  │    ├─ src/
+  │    ├─ Dockerfile
+  │    └─ compose/docker-compose.yml
+  ├─ NGINX/
+  │    ├─ nginx.conf
+  │    ├─ Dockerfile
+  │    └─ compose/docker-compose.yml
+  └─ Monitoring/
+       ├─ prometheus.yml
+       └─ compose/docker-compose.yml
+</code></pre>
+</div>
+
+<div class="section">
+  <h2>5. Vue globale – Imbrication</h2>
+  <pre><code>Code (.NET / config / nginx / portal)
+        │
+        ├─ Dockerfile (par module)
+        │    └─ docker build → images :TAG
+        │
+        └─ docker-compose.yml (par module)
+             └─ docker compose up -d
+                  └─ conteneurs sur kingao-net
+                       ├─ NGINX
+                       ├─ PORTAL
+                       ├─ EPARVIER
+                       ├─ KINGDOMAINE
+                       ├─ Prometheus
+                       └─ Grafana
+</code></pre>
+</div>
+
+</body>
+</html>
+
+
+
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>Workflow KING-AO – Build / Tag / Compose / Up</title>
+  <style>
+    body { font-family: system-ui, sans-serif; background:#0d0d0d; color:#e6e6e6; padding:20px; }
+    h1, h2 { color:#ffcc66; }
+    .section { border:1px solid #333; padding:15px; border-radius:8px; margin-bottom:20px; }
+    pre { background:#1a1a1a; padding:10px; border-radius:6px; overflow-x:auto; }
+    code { color:#9effa1; }
+  </style>
+</head>
+<body>
+
+<h1>Workflow KING-AO – Build / Tag / Compose / Up</h1>
+<p>Pipeline complet pour dockeriser et lancer un module métier .NET 8 dans KING-AO.</p>
+
+<div class="section">
+  <h2>1. Build de l’image</h2>
+  <pre><code>docker build -t eparvier-metier:build .</code></pre>
+</div>
+
+<div class="section">
+  <h2>2. Tag manuel</h2>
+  <pre><code>docker tag eparvier-metier:build eparvier-metier:2026-07-17</code></pre>
+
+  <p>Version Git :</p>
+  <pre><code>GIT_TAG=$(git rev-parse --short HEAD)
+docker tag eparvier-metier:build eparvier-metier:$GIT_TAG</code></pre>
+</div>
+
+<div class="section">
+  <h2>3. docker-compose.yml</h2>
+  <pre><code>services:
+  eparvier-metier:
+    image: eparvier-metier:2026-07-17
+    container_name: eparvier-metier
+    networks:
+      - kingao-net
+    ports:
+      - "5001:8080"
+
+networks:
+  kingao-net:
+    external: true
+</code></pre>
+</div>
+
+<div class="section">
+  <h2>4. Lancement du module</h2>
+  <pre><code>docker compose -f /opt/KING-AO/modules/EPARVIER/compose/docker-compose.yml up -d</code></pre>
+</div>
+
+<div class="section">
+  <h2>5. Résultat</h2>
+  <pre><code>Image → Tag → Compose → Conteneur
+EPARVIER opérationnel sur kingao-net</code></pre>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+# Build
+bin/
+obj/
+
+# Visual Studio
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+*.sln.iml
+
+# VS Code
+.vscode/
+
+# Packages
+packages/
+*.nupkg
+
+# Logs
+*.log
+logs/
+
+# Test Results
+TestResults/
+*.trx
+coverage/
+coverage-report/
+
+# Publish
+publish/
+artifacts/
+
+# User secrets
+secrets.json
+appsettings.Development.json
+appsettings.Local.json
+
+# ASP.NET Scaffolding
+ScaffoldingReadMe.txt
+
+# Entity Framework
+*.dbmdl
+
+# Azure
+.localhistory/
+
+# Docker
+docker-compose.override.yml
+
+# OS Files
+.DS_Store
+Thumbs.db
+
+# Environment variables
+.env
+.env.*
+
+# Certificates
+*.pfx
+*.crt
+*.key
+
+# Resharper
+_ReSharper*/
+*.DotSettings.user
+
+# SonarQube
+.sonarqube/
+
+# BenchmarkDotNet
+BenchmarkDotNet.Artifacts/
+
+# Generated files
+Generated/

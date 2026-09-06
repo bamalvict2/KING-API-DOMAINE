@@ -1,0 +1,226 @@
+#!/bin/bash
+
+# --- ssh-tools.sh ---
+# Outils avancés SSH : diagnostic, permissions, tests, nettoyage
+
+# Vérification dossier ~/.ssh
+verifier_dossier_ssh() {
+    if [ ! -d ~/.ssh ]; then
+        echo -e "${JAUNE}Dossier ~/.ssh absent, création...${RESET}"
+        mkdir -p ~/.ssh
+        chmod 700 ~/.ssh
+    fi
+}
+
+# Correction des permissions
+corriger_permissions() {
+    echo -e "${BLEU}--- Correction des permissions SSH ---${RESET}"
+    chmod 700 ~/.ssh
+    chmod 600 ~/.ssh/id_ed25519_* 2>/dev/null
+    chmod 644 ~/.ssh/id_ed25519_*.pub 2>/dev/null
+    echo -e "${VERT}Permissions corrigées.${RESET}"
+}
+
+# Lister les clés SSH
+liste_cles() {
+    echo -e "${BLEU}--- Liste des clés SSH disponibles ---${RESET}"
+    ls -1 ~/.ssh/id_ed25519_* 2>/dev/null | sed 's/.pub//g'
+}
+
+# Afficher une clé publique
+afficher_pub() {
+    echo -e "${BLEU}--- Affichage de la clé publique ---${RESET}"
+    read -p "Nom de la clé : " nom
+
+    if [ ! -f ~/.ssh/id_ed25519_${nom}.pub ]; then
+        echo -e "${ROUGE}Erreur : clé publique introuvable.${RESET}"
+        return
+    fi
+
+    echo -e "${JAUNE}"
+    cat ~/.ssh/id_ed25519_${nom}.pub
+    echo -e "${RESET}"
+}
+
+# Tester une connexion SSH
+tester_connexion() {
+    echo -e "${BLEU}--- Test de connexion SSH ---${RESET}"
+    read -p "Alias Host à tester : " alias
+    ssh -T $alias
+}
+
+# Recréer une clé publique manquante
+recreer_pub() {
+    echo -e "${BLEU}--- Recréation d'une clé publique manquante ---${RESET}"
+    read -p "Nom de la clé privée : " nom
+
+    if [ ! -f ~/.ssh/id_ed25519_$nom ]; then
+        echo -e "${ROUGE}Erreur : clé privée introuvable.${RESET}"
+        return
+    fi
+
+    ssh-keygen -y -f ~/.ssh/id_ed25519_$nom > ~/.ssh/id_ed25519_${nom}.pub
+    chmod 644 ~/.ssh/id_ed25519_${nom}.pub
+
+    echo -e "${VERT}Clé publique recréée.${RESET}"
+}
+
+# Supprimer fichiers parasites
+supprimer_parasites() {
+    echo -e "${BLEU}--- Suppression des fichiers parasites ---${RESET}"
+    find ~/.ssh -type f \( -name "*~" -o -name "*.old" -o -name "*.bak" -o -name "*.save" \) -delete
+    echo -e "${VERT}Fichiers parasites supprimés.${RESET}"
+}
+
+# Charger toutes les clés valides dans l’agent
+charger_cles_valides() {
+    echo -e "${BLEU}--- Chargement des clés valides dans l'agent SSH ---${RESET}"
+
+    for cle in ~/.ssh/id_ed25519_*; do
+        [[ "$cle" == *.pub ]] && continue
+        echo -e "${JAUNE}Ajout : $(basename "$cle")${RESET}"
+        ssh-add "$cle"
+    done
+
+    echo -e "${VERT}Toutes les clés valides ont été chargées.${RESET}"
+}
+
+# Diagnostic SSH PRO
+diagnostic_ssh() {
+    echo -e "${BLEU}--- Diagnostic automatique SSH PRO ---${RESET}"
+    verifier_dossier_ssh
+
+    echo ""
+    echo -e "${JAUNE}1) Analyse du dossier ~/.ssh${RESET}"
+    if [ -d ~/.ssh ]; then
+        echo -e "${VERT}[OK] Dossier ~/.ssh présent${RESET}"
+    else
+        echo -e "${ROUGE}[!] Dossier ~/.ssh manquant${RESET}"
+        return
+    fi
+
+    echo ""
+    echo -e "${JAUNE}2) Analyse des fichiers de clés${RESET}"
+
+    cles_privees=()
+    cles_publiques=()
+    parasites=()
+
+    while IFS= read -r f; do
+        base=$(basename "$f")
+        case "$base" in
+            id_ed25519_*\.pub)
+                cles_publiques+=("$base")
+                ;;
+            id_ed25519_*)
+                cles_privees+=("$base")
+                ;;
+            *~|*.old|*.bak|*.save)
+                parasites+=("$base")
+                ;;
+        esac
+    done < <(ls -1 ~/.ssh 2>/dev/null)
+
+    echo -e "${BLEU}Clés privées détectées :${RESET}"
+    if [ ${#cles_privees[@]} -eq 0 ]; then
+        echo -e "${ROUGE}  Aucune clé privée id_ed25519_* trouvée${RESET}"
+    else
+        for c in "${cles_privees[@]}"; do echo "  - $c"; done
+    fi
+
+    echo -e "${BLEU}Clés publiques détectées :${RESET}"
+    if [ ${#cles_publiques[@]} -eq 0 ]; then
+        echo -e "${JAUNE}  Aucune clé publique .pub trouvée${RESET}"
+    else
+        for c in "${cles_publiques[@]}"; do echo "  - $c"; done
+    fi
+
+    echo ""
+    echo -e "${JAUNE}3) Vérification permissions + intégrité des clés privées${RESET}"
+
+    cles_hs=()
+    for c in "${cles_privees[@]}"; do
+        chemin="$HOME/.ssh/$c"
+        perms=$(stat -c "%a" "$chemin" 2>/dev/null)
+        header=$(head -n 1 "$chemin" 2>/dev/null)
+
+        ok=true
+
+        if [ "$perms" != "600" ]; then
+            echo -e "${JAUNE}[!] $c : permissions = $perms (recommandé : 600)${RESET}"
+            ok=false
+        fi
+
+        if [[ "$header" != "-----BEGIN OPENSSH PRIVATE KEY-----" ]]; then
+            echo -e "${ROUGE}[!] $c : format inattendu (clé HS ou corrompue)${RESET}"
+            ok=false
+        fi
+
+        if [ "$ok" = false ]; then
+            cles_hs+=("$c")
+        else
+            echo -e "${VERT}[OK] $c : permissions + format corrects${RESET}"
+        fi
+    done
+
+    echo ""
+    echo -e "${JAUNE}4) Analyse du fichier ~/.ssh/config${RESET}"
+
+    cles_config=()
+    if [ -f ~/.ssh/config ]; then
+        while IFS= read -r line; do
+            if echo "$line" | grep -q "IdentityFile"; then
+                f=$(echo "$line" | awk '{print $2}')
+                base=$(basename "$f")
+                cles_config+=("$base")
+            fi
+        done < ~/.ssh/config
+
+        if [ ${#cles_config[@]} -eq 0 ]; then
+            echo -e "${JAUNE}[!] Aucune IdentityFile trouvée dans ~/.ssh/config${RESET}"
+        else
+            echo -e "${BLEU}Clés référencées dans ~/.ssh/config :${RESET}"
+            for c in "${cles_config[@]}"; do echo "  - $c"; done
+        fi
+    else
+        echo -e "${JAUNE}[!] Fichier ~/.ssh/config absent${RESET}"
+    fi
+
+    echo ""
+    echo -e "${JAUNE}5) Analyse de l'agent SSH${RESET}"
+
+    if pgrep -u "$USER" ssh-agent >/dev/null; then
+        echo -e "${VERT}[OK] ssh-agent en cours d'exécution${RESET}"
+        ssh-add -l 2>/dev/null
+    else
+        echo -e "${ROUGE}[!] ssh-agent non lancé${RESET}"
+    fi
+
+    echo ""
+    echo -e "${JAUNE}6) Fichiers parasites détectés${RESET}"
+
+    if [ ${#parasites[@]} -eq 0 ]; then
+        echo -e "${VERT}[OK] Aucun fichier parasite${RESET}"
+    else
+        echo -e "${ROUGE}Fichiers parasites :${RESET}"
+        for p in "${parasites[@]}"; do echo "  - $p"; done
+    fi
+
+    echo ""
+    echo -e "${BLEU}=== ACTIONS POSSIBLES ===${RESET}"
+    echo "1) Corriger les permissions"
+    echo "2) Charger les clés valides dans l'agent"
+    echo "3) Supprimer les fichiers parasites"
+    echo "4) Recréer les clés publiques manquantes"
+    echo "5) Retour au menu"
+    read -p "Choix : " action
+
+    case "$action" in
+        1) corriger_permissions ;;
+        2) charger_cles_valides ;;
+        3) supprimer_parasites ;;
+        4) recreer_pub ;;
+        5) return ;;
+        *) echo -e "${ROUGE}Choix invalide${RESET}" ;;
+    esac
+}

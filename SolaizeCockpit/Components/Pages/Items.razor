@@ -1,0 +1,96 @@
+@page "/items"
+@using SolaizeCockpit.Services
+@inject ItemsService ItemsService
+
+<h3>Items</h3>
+
+@if (isLoading)
+{
+    <p>Chargement...</p>
+}
+else
+{
+    <EditForm Model="newItem" OnValidSubmit="CreateItem">
+        <DataAnnotationsValidator />
+        <ValidationSummary />
+
+        <div>
+            <label>Titre</label><br />
+            <InputText @bind-Value="newItem.Title" />
+        </div>
+
+        <div>
+            <label>Description</label><br />
+            <InputText @bind-Value="newItem.Description" />
+        </div>
+
+        <button type="submit">Créer</button>
+    </EditForm>
+
+    <hr />
+
+    <h4>Liste des items</h4>
+
+    @if (items == null || items.Count == 0)
+    {
+        <p>Aucun item pour l'instant.</p>
+    }
+    else
+    {
+        <ul>
+            @foreach (var item in items)
+            {
+                <li>
+                    <strong>@item.Title</strong> – @item.Description
+                    <button @onclick="() => DeleteItem(item.Id)">Supprimer</button>
+                </li>
+            }
+        </ul>
+    }
+}
+
+@code {
+    private List<ItemDto>? items = new();
+    private ItemCreateDto newItem = new();
+    private bool isLoading = true;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await LoadItems();
+    }
+
+    private async Task LoadItems()
+    {
+        try
+        {
+            isLoading = true;
+            items = await ItemsService.GetItemsAsync();
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Erreur API : {ex.Message}");
+            items = new List<ItemDto>();
+        }
+        finally
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task CreateItem()
+    {
+        if (await ItemsService.CreateItemAsync(newItem))
+        {
+            newItem = new ItemCreateDto();
+            await LoadItems();
+        }
+    }
+
+    private async Task DeleteItem(string id)
+    {
+        if (await ItemsService.DeleteItemAsync(id))
+        {
+            await LoadItems();
+        }
+    }
+}

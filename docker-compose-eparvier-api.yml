@@ -1,0 +1,19 @@
+services:
+  eparvier-api:
+    image: solaizeapi
+    container_name: eparvier-api
+    restart: unless-stopped
+
+    environment:
+      ASPNETCORE_ENVIRONMENT: "Production"
+      MONGO_CONNECTION: "mongodb://eparvier-mongo:27017/eparvier"
+
+    ports:
+      - "5010:8080"
+
+    networks:
+      - eparvier-net
+
+networks:
+  eparvier-net:
+    external: true

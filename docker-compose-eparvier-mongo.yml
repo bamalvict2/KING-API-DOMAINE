@@ -1,0 +1,18 @@
+services:
+  eparvier-mongo:
+    image: mongo:7
+    container_name: eparvier-mongo
+    restart: unless-stopped
+
+    volumes:
+      - /opt/KING-AO/modules/EPARVIER/mongo/data:/data/db
+
+    ports:
+      - "27017:27017"
+
+    networks:
+      - eparvier-net
+
+networks:
+  eparvier-net:
+    external: true
