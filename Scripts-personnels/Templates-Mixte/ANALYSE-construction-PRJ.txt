@@ -1,0 +1,273 @@
+ => => unpacking to docker.io/library/solaizeapi:6ef5438                                                                                    0.5s
+[EPARVIER] SolaizeApi build OK → version 6ef5438
+bamalvict@KING-AO:~/EPARVIER/SolaizeApi$ docker images
+                                                                                                                             i Info →   U  In Use
+IMAGE                ID             DISK USAGE   CONTENT SIZE   EXTRA
+solaizeapi:6ef5438   a6695839040f        371MB          108MB        
+solaizeapi:latest    a6695839040f        371MB          108MB        
+bamalvict@KING-AO:~/EPARVIER/SolaizeApi$ 
+
+
+
+
+
+Cette fois ton build Docker a réussi :
+
+Plain Text
+1
+solaizeapi:6ef5438 a6695839040f
+2
+solaizeapi:latest a6695839040f
+3
+`
+Afficher plus de lignes
+
+On voit que :
+
+l'image a été créée avec le tag Git 6ef5438
+le tag latest pointe vers la même image (a6695839040f)
+le problème de contexte Docker est donc résolu
+
+Tu peux maintenant vérifier qu'elle démarre :
+
+Shell
+1
+//docker run --rm -p 8080:8080 solaizeapi:latest
+Afficher plus de lignes
+
+ou, si ton API écoute sur 80 :
+
+Shell
+1
+//docker run --rm -p 8080:8080 solaizeapi:latest
+
+
+// docker run -d --name solaizeapi -p 8080:80 solaizeapi:latest
+
+Afficher plus de lignes
+
+Puis tester :
+
+Shell
+1
+//curl http://localhost:8080
+2
+ 
+Afficher plus de lignes
+
+ou l'URL Swagger de ton application.
+
+Petit conseil pour ton script : actuellement il affiche toujours :
+
+Plain Text
+1
+[EPARVIER] SolaizeApi build OK
+Afficher plus de lignes
+
+même si une commande échoue. Ajoute dès maintenant :
+
+Shell
+1
+#!/bin/bash
+2
+//set -euo pipefail
+Afficher plus de lignes
+
+en tête du fichier. C'est une excellente habitude pour éviter les faux positifs.
+
+Tu peux aussi inspecter ton image :
+
+Shell
+1
+//docker history solaizeapi:latest
+Afficher plus de lignes
+
+ou :
+
+Shell
+1
+//docker inspect solaizeapi:latest
+2
+`
+Afficher plus de lignes
+
+pour voir ce qu'elle contient et commencer à te familiariser avec les couches Docker.
+
+C'est plutôt bon signe 😊
+
+Ton curl :
+
+Shell
+1
+//curl http://localhost:8080
+Afficher plus de lignes
+
+ne renvoie aucune erreur :
+
+Plain Text
+1
+bamalvict@KING-AO:~/EPARVIER$
+Afficher plus de lignes
+
+Donc Docker a bien transmis la requête à ton API.
+
+Plusieurs possibilités :
+
+La route / existe mais retourne une chaîne vide.
+Tu as une API pure sans endpoint sur /.
+L'API renvoie un code HTTP 204 No Content.
+Tu as uniquement des contrôleurs comme :
+C#
+1
+/api/users
+2
+/api/products
+Afficher plus de lignes
+
+et rien sur la racine :
+
+Plain Text
+1
+/
+2
+ 
+Afficher plus de lignes
+
+Pour voir ce qu'il se passe réellement, teste :
+
+Shell
+1
+//curl -v http://localhost:8080
+Afficher plus de lignes
+
+Tu verras le code HTTP :
+
+Plain Text
+1
+//HTTP/1.1 200 OK
+Afficher plus de lignes
+
+ou
+
+Plain Text
+1
+HTTP/1.1 204 No Content
+Afficher plus de lignes
+
+ou
+
+Plain Text
+1
+HTTP/1.1 404 Not Found
+Afficher plus de lignes
+
+Tu peux aussi tester Swagger :
+
+Shell
+1
+//curl -I http://localhost:8080/swagger
+Afficher plus de lignes
+
+ou ouvrir dans le navigateur :
+
+Plain Text
+1
+//http://localhost:8080/swagger
+Afficher plus de lignes
+
+Et si tu as des endpoints minimal API dans Program.cs :
+
+C#
+1
+app.MapGet("/", () => "Hello World!");
+Afficher plus de lignes
+
+alors :
+
+Shell
+1
+//curl http://localhost:8080
+Afficher plus de lignes
+
+devrait afficher :
+
+Plain Text
+1
+Hello World!
+Afficher plus de lignes
+
+L'étape suivante pour diagnostiquer est :
+
+Shell
+1
+//curl -v http://localhost:8080
+
+
+Pour voir les variables du conteneur :
+
+Shell
+1
+//docker exec -it solaizeapi printenv | sort
+Afficher plus de lignes
+
+ou
+
+Shell
+1
+//docker exec -it solaizeapi printenv | grep ASPNETCORE
+Afficher plus de lignes
+
+Tu verras probablement quelque chose comme :
+
+Plain Text
+1
+ASPNETCORE_ENVIRONMENT=Production
+2
+ASPNETCORE_URLS=http://+:80
+
+Pour voir si ton API expose bien des contrôleurs, essaie :
+
+Shell
+1
+//curl -v http://localhost:8080/api
+
+
+🟩 Ce que ça prouve techniquement
+Le conteneur répond bien sur 8080
+
+Le serveur Kestrel est vivant
+
+Le problème n’est pas le port, mais le chemin
+
+Ton API n’a probablement pas de endpoint /api, mais plutôt /api/... ou /swagger ou /health
+
+🟦 Vérification cockpit : tester les endpoints existants
+Teste maintenant :
+
+Code
+//curl -v http://localhost:8080/
+Puis :
+
+Code
+curl -v http://localhost:8080/swagger
+Et surtout :
+
+Code
+//curl -v http://localhost:8080/health
+Ces trois tests vont me dire :
+
+si ton API expose un endpoint racine
+
+si Swagger est activé
+
+si ton endpoint health existe
+
+Tu peux aussi tester :
+
+Code
+//curl -v http://localhost:8080/api/health
+//curl -v http://localhost:8080/healthz
+//curl -v http://localhost:8080/status
+
+
+404 c normal il faut lancer le Cockpit server en interne SolaizeCockpit 

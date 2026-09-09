@@ -1,0 +1,552 @@
+
+Avec plaisir 😄
+
+Le meilleur moyen de comprendre Docker est justement de tester :
+
+Shell
+1
+pwd
+Afficher plus de lignes
+
+puis :
+
+Shell
+1
+ls .
+2
+ls ..
+3
+ls ../..
+Afficher plus de lignes
+
+Ça permet de visualiser concrètement ce que voient . et ...
+
+Pour Docker, retiens simplement :
+
+Shell
+1
+docker build [options] <contexte>
+Afficher plus de lignes
+
+Exemples :
+
+Shell
+1
+docker build .
+Afficher plus de lignes
+
+→ Docker voit uniquement le dossier courant.
+
+Shell
+1
+docker build ..
+2
+`
+Afficher plus de lignes
+
+→ Docker voit le dossier parent.
+
+Shell
+1
+docker build ../..
+Afficher plus de lignes
+
+→ Docker voit le grand-parent.
+
+Et surtout : le COPY d'un Dockerfile ne peut accéder qu'à des fichiers présents dans le contexte.
+
+D'ailleurs ton erreur était très pédagogique : Docker arrivait bien à trouver le Dockerfile (-f ../Dockerfile.Api), mais pas les fichiers mentionnés dans les COPY, ce qui indique presque toujours un problème de contexte.
+
+Bon courage pour l'exploration de ton environnement EPARVIER 🚀. Tu es tombé sur un des pièges Docker les plus classiques des solutions .NET multi-projets.
+
+
+
+
+
+docker compose down
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+
+
+images construction
+🟦 1️⃣ Construire l’image EPARVIER API → solaizeapi
+Code
+
+cd /opt/KING-AO/modules/EPARVIER/api
+docker build -t solaizeapi .
+
+🟦 2️⃣ Construire l’image EPARVIER Cockpit → blazor
+Code
+
+cd /opt/KING-AO/modules/EPARVIER/cockpit
+docker build -t blazor .
+
+🟦 3️⃣ Construire l’image KINGDOMAINE → kingdomaine
+Code
+
+cd /opt/KING-AO/modules/KINGDOMAINE/docker
+docker build -t kingdomaine .
+
+🟩 Vérifier que les images sont là
+Code
+
+docker images
+
+🟥 1 — Build .NET 8 → Publish → Docker build → Image prête
+
+C’est toujours la séquence :
+Code
+
+dotnet publish -c Release -o out
+docker build -t NOM_IMAGE .
+
+Et tu dois le faire pour chaque métier.
+🟦 2 — EPARVIER API → image solaizeapi
+📌 Dossier :
+Code
+
+/opt/KING-AO/modules/EPARVIER/api
+
+📌 Commandes :
+Code
+
+dotnet publish -c Release -o out
+docker build -t solaizeapi .
+
+👉 Ça crée l’image solaizeapi  
+👉 Le compose EPARVIER pourra enfin la lancer
+
+
+🟥 1 — Rappel cockpit : les compose NE créent PAS les images
+
+Les compose lancent les conteneurs.
+Les images sont créées par dotnet + docker build.
+
+Donc l’ordre est :
+✔ 1) dotnet publish
+✔ 2) docker build
+✔ 3) docker compose up
+
+Si tu sautes une étape → DOWN.
+🟦 2 — Build des 3 métiers (.NET 8 → images Docker)
+🟩 EPARVIER API → image solaizeapi
+Code
+
+cd /opt/KING-AO/modules/EPARVIER/api
+dotnet publish -c Release -o out
+docker build -t solaizeapi .
+
+🟩 EPARVIER Cockpit → image blazor
+Code
+
+cd /opt/KING-AO/modules/EPARVIER/cockpit
+dotnet publish -c Release -o out
+docker build -t blazor .
+
+🟩 KINGDOMAINE → image kingdomaine
+Code
+
+cd /opt/KING-AO/modules/KINGDOMAINE/docker
+dotnet publish -c Release -o out
+docker build -t kingdomaine .
+
+👉 Après ça, les compose peuvent enfin démarrer.
+🟧 3 — Lancer les 3 compose métiers + PORTAL
+🔵 EPARVIER
+Code
+
+cd /opt/KING-AO/modules/EPARVIER/docker
+docker compose up -d
+
+🔵 KINGDOMAINE
+Code
+
+cd /opt/KING-AO/modules/KINGDOMAINE/docker
+docker compose up -d
+
+🔵 PORTAL
+Code
+
+cd /opt/KING-AO/modules/PORTAL/docker
+docker compose up -d
+
+👉 Et là, ton cockpit PORTAL passe de 🔴 à 🟢.
+🟩 4 — Script unique : lancer les 3 compose + PORTAL ensemble
+
+Tu veux les 3 ensembles → je te donne le script KING‑AO officiel.
+
+Crée :
+Code
+
+/opt/KING-AO/start-all.sh
+
+
+
+#!/bin/bash
+
+echo "🚀 KING‑AO — Lancement des modules"
+
+echo "🟩 EPARVIER"
+cd /opt/KING-AO/modules/EPARVIER/docker
+docker compose up -d
+
+echo "🟦 KINGDOMAINE"
+cd /opt/KING-AO/modules/KINGDOMAINE/docker
+docker compose up -d
+
+echo "🟧 PORTAL"
+cd /opt/KING-AO/modules/PORTAL/docker
+docker compose up -d
+
+echo "✅ Tous les modules KING‑AO sont lancés"
+
+Puis :
+Code
+
+chmod +x /opt/KING-AO/start-all.sh
+
+
+
+
+👉 Les 3 métiers + PORTAL démarrent ensemble.  
+👉 Ton cockpit devient 100% opérationnel.
+
+
+
+
+docker rmi solaizecockpit-solaize-api
+docker rmi solaizecockpit-solaize-blazor-server
+docker rmi nginx
+docker rmi grafana/grafana
+docker rmi prom/prometheus
+docker rmi mongo:7.0
+
+docker volume prune -f
+
+docker network prune -f
+
+docker rmi certbot/certbot:latest
+docker rmi -f certbot/certbot:latest
+
+docker volume rm projet1_grafana-data
+
+
+rm -rf certbot
+rm -rf certs
+sudo rm -rf certbot
+sudo rm -rf certs
+ou bien
+sudo chmod -R 777 certbot
+sudo chmod -R 777 certs
+sudo rm -rf certbot
+sudo rm -rf certs
+
+
+docker ps -a
+docker images
+docker network ls
+
+
+gedit ~/.bashrc
+micro   
+nano ~/.bashrc
+
+
+
+
+docker compose down
+docker stop $(docker ps -aq)
+docker rm $(docker ps -aq)
+/
+docker rmi solaizecockpit-solaize-api
+docker rmi solaizecockpit-solaize-blazor-server
+docker rmi nginx
+docker rmi grafana/grafana
+docker rmi prom/prometheus
+docker rmi mongo:7.0
+/
+docker system prune -a --volumes
+docker ps -a
+   
+docker compose ps
+
+docker compose up -d --build
+
+docker ps
+-----------------------------------------------
+docker volume prune -f
+
+docker network prune -f
+
+docker rmi certbot/certbot:latest
+docker rmi -f certbot/certbot:latest
+
+docker volume rm projet1_grafana-data
+
+
+
+🟦 Comment vérifier si tu as plusieurs EPARVIER ?
+Tu peux lancer :
+find /opt/KING-AO/modules -maxdepth 2 -type d -name "EPARVIER*"
+
+1️⃣ Supprimer les dossiers YAML dans la racine
+sudo rm -rf /opt/KING-AO/modules/EPARVIER/alertmanager.yml
+sudo rm -rf /opt/KING-AO/modules/EPARVIER/blackbox.yml
+sudo rm -rf /opt/KING-AO/modules/EPARVIER/prometheus.yml
+
+
+
+
+---------------
+EN C SHARP
+dotnet new webapi -n SolaizeApi
+
+----------------------------
+3
+
+    🟦 Les 3 autres poupées russes (validées)
+🟩 1 — PORTAL
+
+👉 Interface web (HTML + JS)
+👉 Envoie des commandes via fetch()  
+👉 Ne lit pas les configs
+👉 Ne gère pas les modules
+👉 Ne fait que transmettre des actions
+
+C’est la télécommande.
+🟩 2 — portal‑orchestrator.sh
+
+👉 Petit adaptateur
+👉 Reçoit start_all, stop_all, restart_all  
+👉 Appelle STYLE‑ORCH‑KING‑AO.sh
+👉 Peut être condensé à 3 lignes
+
+C’est le relais.
+🟩 3 — STYLE‑ORCH‑KING‑AO.sh
+
+👉 Charge les couleurs
+👉 Charge le dashboard
+👉 Charge les menus
+👉 Charge les utils
+👉 Charge les modes
+👉 Décide dashboard/menu
+👉 Appelle orchestrator.sh pour exécuter les actions réelles
+
+C’est le cockpit humain.
+🟩 4 — orchestrator.sh
+
+👉 Lit paths.conf  
+👉 Lit modules.conf  
+👉 Lit metier.conf  
+👉 Lit kingdomaine.conf  
+👉 Lance METIER + KINGDOMAINE
+👉 Stop / status / ports / images
+
+C’est le cerveau technique.
+🟦 Résumé cockpit ultra clair
+
+Tu as maintenant les 3 poupées russes + le cerveau :
+
+    PORTAL → Adaptateur → STYLE‑ORCH‑KING‑AO.sh → orchestrator.sh → modules
+
+Et oui :
+NETWORKING=… dans paths.conf est exactement ce dont STYLE‑ORCH‑KING‑AO.sh a besoin pour charger le module Networking.
+
+Tu as tout bon.
+Tu as tout compris.
+Tu as une architecture KING‑AO propre, stable, cockpit, professionnelle.
+
+Tu veux maintenant que je te génère :
+
+    Le schéma final KING‑AO
+
+    La version condensée du adaptateur
+
+    Les endpoints PORTAL
+
+Tu choisis la suite.
+
+
+🟦 Schéma final KING‑AO (architecture complète)
+Code
+
+┌──────────────────────────┐
+│        PORTAL (WEB)      │  ← HTML + JS (fetch)
+└──────────────┬───────────┘
+               │
+               ▼
+┌──────────────────────────┐
+│  portal-orchestrator.sh  │  ← Adaptateur minimal
+└──────────────┬───────────┘
+               │
+               ▼
+┌──────────────────────────┐
+│  STYLE-ORCH-KING-AO.sh   │  ← Cockpit humain (dashboard/menu)
+└──────────────┬───────────┘
+               │
+               ▼
+┌──────────────────────────┐
+│     orchestrator.sh      │  ← Cerveau technique
+└──────────────┬───────────┘
+               │
+               ▼
+┌──────────────────────────┐
+│        MODULES           │
+│  METIER / KINGDOMAINE    │
+│      NETWORKING          │
+└──────────────────────────┘
+
+
+-------------------
+🟩 Résumé cockpit ultra clair
+
+    PORTAL a son propre CSS.  
+    COCKPIT (KINGDOMAINE + METIER) utilise le STYLE (STYLE‑ORCH‑KING‑AO.sh).  
+    Les HTML du cockpit n’ont pas besoin de CSS séparé.
+
+Tu as donc :
+Code
+
+PORTAL
+ └── index.html + portal.css
+
+COCKPIT
+ ├── kingdomaine.html  (style interne léger)
+ └── metier.html        (vide pour l’instant)
+STYLE
+ └── STYLE-ORCH-KING-AO.sh  (style cockpit global)
+
+👉 C’est exactement l’architecture KING‑AO.
+
+
+
+
+--------------------------------/log---
+🟦 1 — Le SDK .NET 8 fait un “publish complet”
+
+Quand tu lances :
+Code
+
+dotnet publish -c Release -o out
+
+Le SDK .NET 8 fait automatiquement :
+
+    compilation du code C#
+
+    résolution des dépendances NuGet
+
+    inclusion des DLL nécessaires au runtime
+
+    inclusion des DLL des dépendances indirectes
+
+    génération des fichiers .json
+
+    préparation du dossier pour Docker
+
+
+
+
+
+
+
+⭐ Pour supprimer le dossier prometheus.yml + le fichier dedans
+
+Commande exacte :
+bash
+
+sudo rm -rf /opt/KING-AO/modules/EPARVIER/prometheus.yml
+
+✔ rm → supprime
+✔ -r → récursif (supprime le dossier + contenu)
+✔ -f → force (aucune question)
+✔ chemin → ton dossier exact
+⭐ Vérification après suppression
+bash
+
+ls -l /opt/KING-AO/modules/EPARVIER
+
+Tu dois voir :
+
+➡️ plus de dossier prometheus.yml/  
+➡️ plus de fichier prometheus.yml dedans
+
+
+
+🟦 Méthode 1 — Nautilus en mode admin (la vraie solution)
+
+Tu peux lancer Nautilus en root, et tu fais tout dedans :
+bash
+
+sudo nautilus /opt
+
+✔ Tu navigues dans /opt  
+✔ Tu supprimes
+✔ Tu colles
+✔ Tu déplaces
+✔ Tu renommes
+✔ Tu fais tout comme dans Windows
+✔ Sans taper les chemins longs
+
+C’est la méthode la plus simple.
+🟩 Méthode 2 — Ajouter “Ouvrir en tant qu’administrateur” dans le clic droit
+
+Tu peux installer l’extension officielle :
+bash
+
+sudo apt install nautilus-admin -y
+nautilus -q
+
+Ensuite :
+
+    clic droit sur un dossier → Ouvrir en tant qu’administrateur
+
+    clic droit sur un fichier → Modifier en tant qu’administrateur
+
+✔ Ultra pratique
+✔ Pas besoin de terminal
+✔ Pas besoin de sudo à la main
+🟧 Méthode 3 — Ouvrir un terminal root dans /opt
+
+Si tu veux rester en terminal mais sans retaper les chemins :
+bash
+
+cd /opt/KING-AO/modules/EPARVIER
+sudo -s
+
+Tu deviens root dans le bon dossier :
+Code
+
+root@KING-AO:/opt/KING-AO/modules/EPARVIER#
+
+Et là :
+
+    rm -f fichier.yml
+
+    rm -rf dossier/
+
+    cp fichier /opt/...
+
+    mv fichier /opt/...
+
+➡️ Sans sudo à chaque commande  
+➡️ Sans retaper les chemins longs
+🟦 Ce que je te conseille (cockpit)
+
+Pour KING‑AO, la meilleure combinaison :
+
+    nautilus-admin pour le clic droit
+
+    sudo nautilus /opt quand tu fais du ménage massif
+
+    sudo -s quand tu fais du terminal intensif
+
+Tu vas gagner un temps fou.
+🟩 Tu veux que je t’installe la solution la plus simple ?
+
+    Activer Nautilus Admin
+
+    Ouvrir Nautilus en root dans /opt
+
+    Passer en root dans /opt en terminal
+
+Tu choisis, Bernard.

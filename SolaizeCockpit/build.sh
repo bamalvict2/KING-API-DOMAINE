@@ -8,7 +8,7 @@ GIT_HASH=$(git rev-parse --short HEAD)
 dotnet build ../Solaize.Shared/Solaize.Shared.csproj -c Release
 
 # Build Docker image
-docker build -f ../Dockerfile.Cockpit -t solaizecockpit:$GIT_HASH .
+docker build -f ../Dockerfile.Cockpit -t solaizecockpit:$GIT_HASH ..
 
 # Tag latest
 docker tag solaizecockpit:$GIT_HASH solaizecockpit:latest

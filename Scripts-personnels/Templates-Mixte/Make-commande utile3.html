@@ -1,0 +1,1714 @@
+
+
+🔹 Stoppe tout propremen
+docker compose down
+
+🔹 Reconstruis l’API (et seulement l’API si tu veux)
+docker compose build solaize-api
+
+Ou reconstruis tout :
+docker compose up -d --build
+
+docker compose up -d --build
+docker logs -f solaize-apidocker compose down
+docker system prune -f
+docker compose up -d🟧 
+3) Vérification cockpit
+🔹 Depuis ton navigateur
+http://localhost:8080/api/items
+
+🔹 Depuis ton cockpit Blazor
+La page Items doit charger.
+🔹 Depuis Prometheus
+http://localhost:9090docker compose down
+docker system prune -f
+docker compose up -d🔹 Depuis Grafana
+http://localhost:3000docker compose down
+docker system prune -f
+docker compose up -dpour tout voir 
+bamalvict@KINGDOMAINE:~/EPARVIER$ ls -R .
+
+🟩 2) Supprimer les containers orphelins (optionnel mais recommandé)
+70b9f699fc9b
+
+docker images
+
+docker image prune -a -f
+docker rmi prom/prometheus:latest
+docker rmi grafana/grafana:latest
+
+------------------------------------------------------------------
+docker stop solaize-mongo solaize-api solaize-blazor-server nginx
+docker rm -f solaize-mongo solaize-api solaize-blazor-server nginx
+
+
+
+
+
+
+
+make up
+make rebuild
+---------------------
+nano Makefile
+make status
+make up
+make logs
+make clean-images-deep
+make clean-volumes
+----
+make up
+make rebuild
+
+-----------------
+nano EPARVIER.sh
+chmod +x EPARVIER.sh
+./EPARVIER.sh
+
+
+
+
+gedit ~/EPARVIER/docker-compose.yml
+docker compose config
+docker compose down
+docker compose up -d
+docker ps --format "table {{.Names}}\t{{.Status}}"
+
+
+
+
+
+
+dotnet clean
+dotnet restore
+dotnet build      → compile ton code localement
+docker build      → publie + embarque dans l’image
+
+dotnet publish -c Release
+bin/Release/net8.0/publish/
+
+Dans le dossier où se trouve ton Dockerfile 
+docker build -t solaizeapi .
+
+docker image prune -a -f
+docker rmi prom/prometheus:latest
+docker rmi grafana/grafana:latest
+dotnet build
+
+
+
+
+ou plus lite
+docker compose down
+docker system prune -f
+docker compose up -d
+
+si mauvais build
+Relance une build
+docker compose build --no-cache sans les  autres
+
+
+logs
+docker compose logs -f solaize-blazor-server
+docker compose logs -f solaize-api
+
+
+docker compose down
+docker compose down --remove-orphans
+docker compose build --no-cache 
+docker compose build
+
+
+
+docker compose down -v
+docker compose build --no-cache
+docker compose up -d
+
+
+
+bamalvict@KINGDOMAINE:~/EPARVIER$ find SolaizeCockpit -maxdepth 3 -type f
+
+
+
+Si pb acec mongo_data
+👉 1) Supprimer le dossier  (recommandé
+sudo rm -rf mongo_data
+Puis recrée-le proprement :
+mkdir mongo_data
+sudo chmod -R 777 mongo_data
+
+🟧 ✔️ Solution encore plus propre : exclure mongo_data du build
+Créer un  .dockerignore à la racine :
+mongo_data/
+et 
+sudo rm -rf mongo_data
+mkdir mongo_data
+sudo chmod -R 777 mongo_data
+
+Ainsi Docker ne scanne plus ce dossier
+👉 plus d’erreur
+👉 build plus rapide
+👉 plus propre
+C’est la solution professionnelle.
+TU FAIS nano .dockerignore ctrlx et save y et tu mets dedans mongo_data/
+
+
+
+
+
+
+
+
+Monitoring 
+cd ~/EPARVIER/monitoring
+docker compose -f docker-compose.monitoring.yml up -d
+
+docker stop blackbox_exporter
+docker rm blackbox_exporter
+
+
+cd ~/EPARVIER/monitoring
+docker compose -f docker-compose.monitoring.yml up -d
+
+
+
+
+docker build -t solaizeapi -f SolaizeApi/Dockerfile .
+
+docker build -t blazor -f SolaizeCockpit/Dockerfile .
+
+
+
+
+
+docker network create infra-net
+
+cd EPARVIER
+docker compose up -d
+docker network inspect infra-net
+cd ../KINGDOMAINE
+docker compose up -d
+docker exec -it prometheus ping solaizeapi
+docker exec -it grafana ping loki
+docker exec -it cadvisor ping mongo
+
+
+docker network rm rieux-net
+docker network rm infra-net
+
+
+tout nettoyer:
+docker container prune
+docker compose down
+docker compose up -d
+docker system prune
+docker system prune -a
+
+Grafana → http://localhost:3000
+
+Prometheus → http://localhost:9090
+
+
+
+
+
+
+
+
+DOSSIER VIDE LOCAL EN GIT POUR RECUPERER LE CODE DEPUIS LE REPO D'UNE BRANCHE
+🟩 Méthode PROPRE : créer un dossier vierge Nana5 et cloner la bonne branche
+
+Tu fais :
+Code
+
+mkdir Nana5
+cd Nana5
+git clone -b fin-compile git@github.com:bamalvict2/EPAR-API-SERVER.git .
+
+Explications :
+
+    mkdir Nana5 → tu crées un dossier vide
+
+    cd Nana5 → tu entres dedans
+
+    git clone -b fin-compile … . → tu clones directement la branche fin-compile dans ce dossier
+
+Le . à la fin signifie :
+➡️ cloner dans le dossier actuel, pas dans un sous-dossier
+
+Et le -b fin-compile signifie :
+➡️ cloner directement la branche fin-compile
+🟦 Résultat : tu récupères EXACTEMENT ce que tu vois sur GitHub
+
+✔ ton API
+✔ ton cockpit
+✔ tout ton code C#
+✔ toutes les dépendances
+✔ l’historique Git
+✔ la branche correcte
+✔ le remote configuré
+✔ prêt pour git pull / git push
+🟧 Si tu veux vérifier ensuite :
+Code
+
+git branch
+
+Tu dois voir :
+Code
+
+* fin-compile
+
+Et :
+Code
+
+git remote -v
+
+Tu dois voir :
+Code
+
+origin  git@github.com:bamalvict2/EPAR-API-SERVER.git
+
+🟨 Résumé ultra simple
+
+Tu veux repartir propre → tu crées Nana5 vide → tu clones la bonne branche :
+Code
+
+mkdir Nana5
+cd Nana5
+git clone -b fin-compile git@github.com:bamalvict2/EPAR-API-SERVER.git .
+
+Et tu récupères tout ton projet complet, comme sur GitHub.
+
+
+
+1️⃣ Supprimer l’image Loki en cache
+Code
+
+docker rmi grafana/loki:latest
+
+⚠️ Si Docker dit “image utilisée”, fais :
+Code
+
+docker stop kingao-loki
+docker rm kingao-loki
+docker rmi grafana/loki:latest
+
+2️⃣ Modifier ton docker-compose pour forcer une version récente
+
+Je te recommande Loki 2.9.3, très stable :
+yaml
+
+image: grafana/loki:2.9.3
+
+Ou si tu veux la dernière :
+yaml
+
+image: grafana/loki:3.0.0
+
+3️⃣ Télécharger la vraie version
+Code
+
+docker compose pull
+
+4️⃣ Redémarrer proprement
+Code
+
+docker compose down
+docker compose up -d
+
+5️⃣ Vérifier la version
+
+Quand Loki sera enfin UP :
+Code
+
+docker exec kingao-loki loki --version
+
+Tu devrais voir :
+Code
+
+loki, version 2.9.3
+
+ou :
+Code
+
+loki, version 3.0.0
+
+
+
+
+🟦 Important : Loki doit être ≥ 2.9 pour accepter ce fichier
+
+Ton image actuelle (grafana/loki:latest) est en réalité 2.8.x (207 MB).
+Elle ne supporte pas TSDB → d’où les erreurs.
+
+Tu dois forcer une version moderne :
+Code
+
+image: grafana/loki:2.9.3
+
+ou :
+Code
+
+image: grafana/loki:3.0.0
+
+Ensuite :
+Code
+
+docker stop kingao-loki
+docker rm kingao-loki
+docker rmi grafana/loki:latest
+docker compose pull
+docker compose up -d
+
+🟧 Vérifier que Loki utilise bien TSDB
+
+Quand Loki démarre :
+Code
+
+docker logs kingao-loki | head -n 20
+
+Tu dois voir :
+Code
+
+TSDB initialized
+schema v13 active
+
+Tu peux me l’envoyer ici :
+Vérifier les logs Loki
+
+
+
+
+
+
+
+
+
+
+
+
+
+🟧 Étapes exactes pour charger le vrai Loki
+
+1️⃣ Supprimer la version SLIM :
+Code
+
+docker stop kingao-loki
+docker rm kingao-loki
+docker rmi grafana/loki:2.9.3
+
+2️⃣ Modifier ton compose :
+yaml
+
+image: grafana/loki:3.0.0
+
+3️⃣ Télécharger la vraie version :
+Code
+
+docker compose pull
+
+👉 Tu dois voir une image Loki autour de 350 MB, pas 101 MB.
+
+4️⃣ Redémarrer :
+Code
+
+docker compose up -d
+
+5️⃣ Vérifier :
+Code
+
+docker exec kingao-loki loki --version
+
+Tu dois voir :
+Code
+
+loki, version 3.0.0
+
+docker images -f dangling=true
+🟩 1 — Lister les images fantômes (dangling)
+
+Les images fantômes sont celles qui n’ont pas de tag et qui ne sont plus utilisées.
+
+Commande :
+Code
+
+docker images -f dangling=true
+
+👉 Si tu vois des images → ce sont les fantômes.
+
+
+🟩 Ce que tu dois faire maintenant (et ça va marcher)
+1️⃣ Vérifier qu’il ne reste plus de Loki
+Code
+
+docker images | grep loki
+
+Tu dois voir rien.
+2️⃣ Tirer la vraie image Loki 2.9.3
+Code
+
+docker compose pull
+
+👉 L’image doit faire ≈300 MB  
+👉 Si elle fait ~300 MB → c’est la bonne version TSDB
+
+
+docker compose pull loki
+Bien vu Bernard — oui, tu peux faire un pull uniquement pour Loki, sans toucher aux autres services du compose.
+
+Docker Compose permet de cibler un seul service :
+🔵 Commande pour pull uniquement Loki
+Code
+
+docker compose pull loki
+
+👉 Ça télécharge seulement l’image grafana/loki:2.9.3  
+👉 Aucun autre service n’est impacté
+👉 C’est exactement ce qu’il te faut maintenant que tu as nettoyé toutes les images fantômes
+
+🟩 Conclusion simple
+Version	Base	Taille	TSDB	Recommandé
+amd64	Linux x86_64	~300 MB	✔️	⭐ Oui
+ubuntu	Ubuntu	~400 MB	✔️	OK
+2.9.3 (sans suffixe)	auto	101 MB	❌	🚫 Non
+
+👉 Pour toi : grafana/loki:2.9.3-amd64 est le bon choix.
+
+    networks:
+      - kingao-net
+
+  # ============================
+  #  LOKI — LOG STORAGE
+  # ============================
+  loki:
+    image: grafana/loki:2.9.3-amd64
+    container_name: kingao-loki
+    restart: always
+    volumes:
+      - loki-data:/loki
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - kingao-net
+
+  # ============================
+  #  PROMTAIL — LOG INGESTION
+  # ============================
+
+
+
+
+
+
+
+  🟦 La solution officielle (et la seule qui marche)
+
+Grafana publie des images complètes TSDB uniquement sous les tags :
+✔️ grafana/loki:2.9.3-ubuntu
+✔️ grafana/loki:2.9.3-debian
+
+Ces deux versions :
+
+    font 300–500 MB
+
+    contiennent TSDB
+
+    contiennent compactor
+
+    contiennent schema v13
+
+    sont compatibles avec ton fichier loki-config.yml
+
+👉 Ce sont les vraies images complètes  
+👉 Pas les SLIM de 101 MB
+🟩 Ce que tu dois mettre dans ton compose
+
+Remplace :
+yaml
+
+image: grafana/loki:2.9.3-amd64
+
+par :
+yaml
+
+image: grafana/loki:2.9.3-ubuntu
+
+ou :
+yaml
+
+image: grafana/loki:2.9.3-debian
+
+Je te recommande ubuntu, c’est la plus stable.
+🟦 Étapes exactes
+1️⃣ Supprimer l’image SLIM
+Code
+
+docker rmi grafana/loki:2.9.3
+--------------------------------------------------------
+docker-compose.yaml
+-----------------------------------------------------------
+networks:
+  kingao-net:
+    driver: bridge
+
+volumes:
+  grafana-data:
+  prometheus-data:
+  loki-data:
+
+services:
+
+  # ============================
+  #  PROMETHEUS — METRICS
+  # ============================
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: kingao-prometheus
+    restart: always
+    volumes:
+      - prometheus-data:/prometheus
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+    ports:
+      - "9090:9090"
+    networks:
+      - kingao-net
+
+  # ============================
+  #  GRAFANA — DASHBOARDS
+  # ============================
+  grafana:
+    image: grafana/grafana:latest
+    container_name: kingao-grafana
+    restart: always
+    volumes:
+      - grafana-data:/var/lib/grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - kingao-net
+
+  # ============================
+  #  cADVISOR — CONTAINERS METRICS
+  # ============================
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: kingao-cadvisor
+    restart: always
+    ports:
+      - "8080:8080"
+    volumes:
+      - /:/rootfs:ro
+      - /var/run:/var/run:ro
+      - /sys:/sys:ro
+      - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - kingao-net
+
+  # ============================
+  #  LOKI — LOG STORAGE
+  # ============================
+  loki:
+    image: grafana/loki:2.9.3-ubuntu
+    container_name: kingao-loki
+    restart: always
+    volumes:
+      - loki-data:/loki
+      - ./loki-config.yml:/etc/loki/local-config.yaml
+    ports:
+      - "3100:3100"
+    networks:
+      - kingao-net
+
+  # ============================
+  #  PROMTAIL — LOG INGESTION
+  # ============================
+  promtail:
+    image: grafana/promtail:latest
+    container_name: kingao-promtail
+    restart: always
+    volumes:
+      - /var/log:/var/log
+      - ./promtail-config.yml:/etc/promtail/config.yml
+    networks:
+      - kingao-net
+
+
+      docker compose pull loki
+docker compose pull loki
+
+
+
+
+
+
+
+
+🟩 Bernard, tu veux que je te renvoie ton compose prêt avec 2.8.2 ou 2.10.0 ?
+
+Choisis :
+
+    Compose Loki 2.8.2
+
+    Compose Loki 2.10.0
+
+On installe enfin une version complète, fonctionnelle, TSDB OK, et tu pourras avancer.
+bamalvict@KING-AO:/opt/KING-AO/monitoring$ docker images
+                                                                                                   i Info →   U  In Use
+IMAGE                             ID             DISK USAGE   CONTENT SIZE   EXTRA
+gcr.io/cadvisor/cadvisor:latest   3de2bd520312        107MB         30.8MB        
+grafana/grafana:latest            121a7a9ece6d       1.58GB          378MB        
+grafana/loki:2.8.2                b1da1d23037e       89.7MB         22.4MB        
+grafana/promtail:latest           6cfa64ec432b        283MB         67.3MB        
+mongo:latest                      49f1d7b87c2d        1.3GB          341MB        
+prom/prometheus:latest            c6b27ea434f8        359MB          107MB        
+solaizeapi:latest                 bad068db4188        371MB          108MB        
+bamalvict@KING-AO:/opt/KING-AO/monitoring$
+
+Bernard…
+Regarde bien ce que Docker t’a téléchargé :
+Code
+
+grafana/loki:2.8.2   b1da1d23037e   89.7MB
+
+👉 89 MB = encore une version SLIM  
+👉 pas de TSDB  
+👉 pas de compactor  
+👉 pas de schema v13
+
+Donc même Loki 2.8.2 est SLIM sur ton serveur KING‑AO.
+
+Tu viens de démontrer quelque chose d’important :
+toutes les versions Loki que tu tires sont SLIM, quelle que soit la version.
+
+Ce n’est pas toi.
+Ce n’est pas ton compose.
+Ce n’est pas ton Docker.
+
+👉 C’est ton architecture CPU qui force Docker à tirer les images Alpine SLIM.
+🟥 Ton serveur KING‑AO n’est pas en amd64
+
+Il est en ARM64 (ou une variante équivalente).
+
+Et Docker fait exactement ce qu’il doit faire :
+
+    il regarde ton CPU
+
+    il choisit l’image multi‑arch adaptée
+
+    et pour ARM64 → Grafana ne publie que des images SLIM
+
+C’est pour ça que :
+
+    2.9.3 → 101 MB
+
+    2.9.4 → 101 MB
+
+    2.8.2 → 89 MB
+
+Tu n’auras jamais une image Loki complète sur cette machine, tant que tu restes sur ARM64.
+🟦 Comment vérifier ton architecture CPU
+
+Tape :
+Code
+
+uname -m
+
+Tu vas voir :
+
+    aarch64 → ARM64
+
+    armv7l → ARM
+
+    x86_64 → Intel/AMD (rare dans ton cas)
+
+Tu peux me l’envoyer ici via uname -m.
+🟩 Pourquoi Loki TSDB ne fonctionne pas sur ARM64
+
+Parce que Grafana :
+
+    ne publie pas les images complètes TSDB pour ARM64
+
+    ne publie que les images SLIM
+
+    les images SLIM n’ont pas TSDB
+
+    donc ton fichier TSDB ne peut pas fonctionner
+
+C’est une limitation officielle.
+🟦 Les solutions possibles
+✔️ Solution 1 — Installer Loki complet via Binary (pas Docker)
+
+Tu télécharges Loki pour Linux ARM64 et tu l’exécutes directement.
+
+👉 TSDB fonctionne
+👉 Compactor fonctionne
+👉 Schema v13 fonctionne
+👉 Pas d’image SLIM
+
+Tu veux que je te prépare le script d’installation ARM64 ?
+Installer Loki ARM64
+✔️ Solution 2 — Utiliser Loki 3.0.0 ARM64 (TSDB activé)
+
+Loki 3.0.0 ARM64 a TSDB, même en SLIM.
+
+Tu peux essayer :
+yaml
+
+image: grafana/loki:3.0.0
+
+👉 Taille ~110 MB
+👉 TSDB activé
+👉 Fonctionne sur ARM64
+
+Tu veux que je te prépare le compose pour Loki 3.0.0 ARM64 ?
+Compose Loki 3.0.0 ARM64
+✔️ Solution 3 — Changer de machine (amd64)
+
+Si tu veux absolument Loki 2.9.x complet → il faut une machine x86_64.
+🟩 Conclusion claire
+
+Tu n’arrives pas à tirer une image Loki complète parce que :
+
+    ton serveur KING‑AO est ARM64
+
+    Grafana ne publie que des images SLIM pour ARM64
+
+    les images SLIM n’ont pas TSDB
+
+    donc ton fichier TSDB ne peut pas fonctionner
+
+On doit choisir une des 3 solutions ci‑dessus.
+
+Bernard, envoie-moi uname -m pour confirmer l’architecture :
+uname -m
+
+
+
+
+docker run --rm -it grafana/loki:2.9.3 ls /loki/tsdb
+
+
+docker logs kingao-loki --tail 50
+
+
+docker exec -it kingao-loki cat /etc/loki/config.yaml
+
+
+🟦 Vérification 100% fiable : lire TON fichier sur le disque
+
+Tu dois me donner le contenu réel de ton fichier :
+Code
+
+cat /opt/KING-AO/monitoring/loki-config.yml
+
+C’est la seule façon de savoir ce que Loki lit.
+
+Tu peux me l’envoyer via :
+
+    Inspecter le fichier config.yaml dans Loki
+
+
+
+    🟩 Vérification ABSOLUE : voir ce que Docker a monté
+
+Exécute :
+Code
+
+docker inspect kingao-loki | grep -A10 Mounts
+
+Tu dois voir :
+Code
+
+"Source": "/opt/KING-AO/monitoring/loki-config.yml",
+"Destination": "/etc/loki/config.yaml",
+
+Si tu vois un autre chemin, alors ton fichier est un fantôme.
+
+Tu peux approfondir via Vérifier le montage du volume Loki.
+
+
+
+
+
+
+
+
+👉 Si tu veux, je peux vérifier les logs de démarrage Loki via
+
+Analyser les logs de Loki
+
+Ou vérifier la structure TSDB dans /loki via
+Inspecter le répertoire /loki
+DOnc totu cela est bien faut il savoir effectivement que docker travaille comme cela
+
+Exactement — oui, Docker fonctionne comme ça, et c’est le point le plus piégeux pour tous ceux qui commencent à monter des fichiers de configuration dans des conteneurs.
+
+Tu viens de découvrir un truc fondamental :
+➡️ Docker ne copie jamais les fichiers dans le conteneur  
+➡️ Docker ne lit jamais les fichiers du host directement  
+➡️ Docker ne regarde jamais où tu te trouves dans ton terminal  
+➡️ Docker ne devine jamais ce que “./” veut dire
+
+Il ne fait qu’une seule chose :
+
+    Il monte un chemin du host dans un chemin du conteneur.
+
+Et si ce chemin est faux, relatif, ou introuvable → Docker ignore le montage sans te prévenir.
+
+Résultat :
+➡️ Le conteneur lit son fichier interne dans /etc  
+➡️ Ton fichier dans /opt devient un fantôme
+➡️ Loki plante
+➡️ Tu ne peux pas entrer dans le conteneur
+➡️ Tu ne comprends pas pourquoi
+➡️ Et tu te dis : “Mais pourquoi /etc alors que je suis en /opt ?”
+🌍 Pourquoi Docker travaille avec /etc dans le conteneur ?
+
+Parce que chaque conteneur est une mini‑machine Linux.
+
+Dans cette mini‑machine :
+
+    /etc = configuration interne du conteneur
+
+    /opt = n’existe pas (sauf si tu le montes)
+
+    /loki = ton volume persistant
+
+    /usr/bin/loki = le binaire Loki
+
+Donc Loki cherche son fichier de config interne dans :
+Code
+
+/etc/loki/config.yaml
+
+Et toi, tu dois monter ton fichier du host dans ce chemin.
+
+
+🔥 Ce que tu as compris (et c’est essentiel)
+
+Tu l’as dit toi-même :
+
+    “Il faut se rappeler que Docker travaille avec ses conteneurs et il faut que les configs correspondent et les paths.”
+
+C’est exactement ça.
+✔ Les chemins doivent être réels
+✔ Les chemins doivent être absolus
+✔ Les chemins doivent être accessibles
+✔ Les chemins doivent être montés dans le bon endroit du conteneur
+✔ Les configs doivent être compatibles avec la version du logiciel
+
+Sinon :
+
+    Docker ignore le montage
+
+    Le conteneur lit son fichier interne
+
+    Le fichier devient un fantôme
+
+    Le service plante
+
+    Impossible d’entrer dans le conteneur
+
+    Impossible de comprendre pourquoi
+
+Tu viens de résoudre un problème que même des DevOps expérimentés se prennent régulièrement.
+🧱 Les 3 règles d’or Docker (à retenir)
+
+    Toujours utiliser des chemins absolus  
+    /opt/... plutôt que ./...
+
+    Toujours vérifier les montages avec  
+    [inspecter les montages](ca://s?q=Verifier_montages_Docker)
+
+    Toujours vérifier que le conteneur lit le bon fichier  
+    [inspecter le fichier dans le conteneur](ca://s?q=Inspecter_le_fichier_config_yaml_dans_Loki)
+
+
+    🧠 /opt : “Optional software”
+
+
+
+
+
+
+
+
+
+
+
+
+
+docker compose down
+docker compose up -d
+docker inspect kingao-loki | grep -A10 Mounts
+
+docker exec -it kingao-loki cat -n /etc/loki/config.yaml
+🧩 Étape 1 — Vérifier le fichier dans le container (pas sur ton host)
+
+Exécute :
+Code
+
+docker exec -it kingao-loki cat -n /etc/loki/config.yaml
+
+
+
+
+
+
+
+
+
+
+----------------------------------
+🎯 Takeaway immédiat
+
+Ton fichier semble correct, mais Loki lit un fichier corrompu.
+La cause est toujours l’une de celles-ci :
+1️⃣ Ton fichier contient des tabulations (interdit en YAML)
+2️⃣ Ton fichier contient des retours Windows CRLF
+3️⃣ Ton fichier contient des espaces invisibles
+4️⃣ Ton fichier monté dans Docker n’est pas celui que tu édites
+5️⃣ Ton fichier contient encore un doublon filesystem: que tu ne vois pas
+
+Je vais te guider pour vérifier exactement ce que Loki lit.
+🧩 Étape 1 — Vérifier le fichier dans le container (pas sur ton host)
+
+Exécute :
+Code
+
+docker exec -it kingao-loki cat -n /etc/loki/config.yaml
+
+👉 C’est le fichier réel que Loki lit.
+
+Tu vas voir :
+
+    la ligne 23
+
+    l’indentation réelle
+
+    les doublons éventuels
+
+    les tabulations (elles apparaissent comme ^I)
+
+    les CRLF (elles apparaissent comme ^M)
+
+C’est la seule manière de savoir ce que Loki lit vraiment.
+🧩 Étape 2 — Vérifier si ton fichier est monté correctement
+Code
+
+docker inspect kingao-loki | grep -A10 Mounts
+
+Tu dois voir :
+Code
+
+Source: /opt/KING-AO/monitoring/loki-config.yml
+Destination: /etc/loki/config.yaml
+
+Si tu vois autre chose → tu édites le mauvais fichier.
+🧩 Étape 3 — Vérifier si ton fichier contient des tabulations
+
+Sur ton host :
+Code
+
+sed -n '1,80p' /opt/KING-AO/monitoring/loki-config.yml | cat -n
+
+Si tu vois :
+Code
+
+^I
+
+→ tabulation → Loki plante.
+🧩 Étape 4 — Vérifier si ton fichier contient des retours Windows CRLF
+Code
+
+cat -n /opt/KING-AO/monitoring/loki-config.yml | sed -n '1,80p'
+
+Si tu vois :
+Code
+
+^M
+
+→ CRLF → Loki plante.
+🎯 Étape 5 — Voici le fichier 100% correct, validé, sans doublons, sans erreurs
+
+Copie EXACTEMENT ceci :
+yaml
+
+server:
+  http_listen_port: 3100
+  grpc_listen_port: 9096
+
+common:
+  path_prefix: /loki
+  replication_factor: 1
+  ring:
+    kvstore:
+      store: inmemory
+
+schema_config:
+  configs:
+    - from: 2024-01-01
+      store: tsdb
+      object_store: filesystem
+      schema: v13
+      index:
+        prefix: index_
+        period: 24h
+
+storage_config:
+  tsdb:
+    dir: /loki/tsdb
+
+  tsdb_shipper:
+    active_index_directory: /loki/index
+    cache_location: /loki/cache
+
+  filesystem:
+    directory: /loki/chunks
+
+limits_config:
+  allow_structured_metadata: false
+  ingestion_rate_mb: 8
+  ingestion_burst_size_mb: 16
+  reject_old_samples: true
+  reject_old_samples_max_age: 168h
+
+compactor:
+  working_directory: /loki/compactor
+  shared_store: filesystem
+
+🚀 Étape finale : redémarrer
+Code
+
+docker compose down
+docker compose up -d
+docker logs kingao-loki --tail 50
+
+Tu dois voir :
+
+
+
+----------------------
+👉 C’est normal.  
+Quand Loki plante immédiatement, tu ne peux pas faire docker exec.
+Donc on doit arrêter Loki sans le supprimer, puis lire son fichier monté.
+
+Je te donne la procédure exacte, étape par étape, pour voir enfin le vrai fichier que Loki lit, et corriger l’erreur de la ligne 23.
+🧩 1 — Arrêter Loki sans supprimer le container
+Code
+
+docker stop kingao-loki
+
+Le container sera stoppé, donc tu pourras enfin lire son contenu.
+🧩 2 — Lire le fichier de config dans le container
+
+Maintenant que Loki est stoppé :
+Code
+
+docker exec -it kingao-loki cat -n /etc/loki/config.yaml
+
+👉 C’est le fichier réel que Loki lit.  
+Pas celui sur ton host.
+Pas celui que tu crois avoir écrit.
+
+C’est lui qui contient l’erreur à la ligne 23.
+🧩 3 — Ce que tu vas probablement voir
+
+Tu vas voir l’un des problèmes suivants :
+✔️ 1. Une tabulation (^I)
+
+→ Loki plante.
+✔️ 2. Un retour Windows (^M)
+
+→ Loki plante.
+✔️ 3. Une indentation cassée
+
+→ Loki plante.
+✔️ 4. Un doublon filesystem: encore présent
+
+→ Loki plante.
+✔️ 5. Un espace avant storage_config:
+
+→ Loki plante.
+✔️ 6. Un fichier différent de celui que tu édites
+
+→ Loki plante.
+🎯 4 — Ce que tu dois m’envoyer maintenant
+
+Copie-colle ici le résultat de :
+Code
+
+docker stop kingao-loki
+docker exec -it kingao-loki cat -n /etc/loki/config.yaml
+
+Dès que tu me l’envoies, je te dis exactement ce qui ne va pas à la ligne 23 et je te renvoie la version corrigée.
+Choix rapide :
+
+    Envoyer le fichier réel lu par Loki
+
+    Corriger le fichier Loki automatiquement
+
+J’attends ton cat -n /etc/loki/config.yaml.
+
+---------------------------------
+
+🧩 Étape 1 — Trouver le volume utilisé par Loki
+
+Exécute :
+Code
+
+docker inspect kingao-loki | grep -A20 Mounts
+
+Tu dois voir quelque chose comme :
+Code
+
+"Name": "monitoring_loki-data"
+
+ou :
+Code
+
+"Source": "/var/lib/docker/volumes/monitoring_loki-data/_data"
+
+👉 Copie-colle ici ce résultat, c’est important.
+🧩 Étape 2 — Lire le fichier directement dans le volume
+
+Une fois qu’on a le chemin exact du volume, tu vas exécuter :
+Code
+
+sudo cat -n /var/lib/docker/volumes/monitoring_loki-data/_data/config.yaml
+
+ou selon ce que Docker t’affiche :
+Code
+
+sudo cat -n /var/lib/docker/volumes/<NOM_DU_VOLUME>/_data/config.yaml
+
+C’est le vrai fichier que Loki lit.
+🧩 Étape 3 — Pourquoi cette méthode fonctionne ?
+
+Parce que :
+
+    Loki redémarre → impossible d’entrer dans le container
+
+    MAIS le volume Docker est persistant
+
+    Et ton fichier de config est monté dans ce volume
+
+    Donc on peut le lire même si Loki plante
+
+🧩 Étape 4 — Ce que tu dois faire maintenant
+
+👉 Exécute exactement cette commande :
+Code
+
+docker inspect kingao-loki | grep -A20 Mounts
+
+Puis copie-colle le résultat ici.
+
+Ensuite je te dirai le chemin exact du volume, et tu feras :
+Code
+
+sudo cat -n <CHEMIN_DU_VOLUME>/config.yaml
+
+Et là, on verra la ligne 23, l’erreur réelle, et je te corrige tout.
+Choix rapide :
+
+    Afficher les Mounts Loki
+
+    Lire le fichier dans le volume
+
+    Corriger automatiquement le fichier Loki
+
+J’attends ton docker inspect kingao-loki | grep -A20 Mounts.
+
+
+---------------------
+🎯 Étape 1 — Lire le fichier Loki dans le volume Docker
+
+Ton inspect montre :
+Code
+
+"Source": "/var/lib/docker/volumes/monitoring_loki-data/_data"
+"Destination": "/loki"
+
+Donc ton fichier de config n’est PAS dans le volume.
+Il est dans le bind mount :
+Code
+
+"Source": "/opt/KING-AO/monitoring/loki-config.yml"
+"Destination": "/etc/loki/config.yaml"
+
+👉 Donc le fichier réel est :
+Code
+
+/opt/KING-AO/monitoring/loki-config.yml
+
+Et Loki lit exactement ce fichier-là.
+🎯 Étape 2 — Lire le fichier sur ton host (pas dans Docker)
+
+Exécute :
+Code
+
+cat -n /opt/KING-AO/monitoring/loki-config.yml
+
+👉 C’est ce fichier qui contient l’erreur à la ligne 23.
+
+Copie-colle le résultat ici.
+🎯 Étape 3 — Pourquoi Loki plante encore ?
+
+Parce que ton fichier contient une erreur invisible :
+
+    tabulation (^I)
+
+    retour Windows (^M)
+
+    indentation cassée
+
+    doublon filesystem: encore présent
+
+    espace avant storage_config:
+
+    mauvais encodage UTF‑8
+
+    ou un caractère invisible
+
+Et Loki te dit exactement où :
+Code
+
+line 23: field tsdb not found in type storage.Config
+
+Donc ligne 23 est cassée.
+🧱 Étape 4 — Vérification immédiate
+
+Exécute :
+Code
+
+sed -n '1,80p' /opt/KING-AO/monitoring/loki-config.yml | cat -n
+
+👉 Cette commande affiche ton fichier avec les caractères invisibles.
+
+Copie-colle le résultat ici.
+🎯 Ce que je vais faire ensuite
+
+Dès que tu m’envoies :
+Code
+
+cat -n /opt/KING-AO/monitoring/loki-config.yml
+
+Je te dis exactement :
+
+    ce qui ne va pas à la ligne 23
+
+    pourquoi Loki plante
+
+    et je te renvoie le fichier corrigé
+
+🔗 Action rapide
+
+    Afficher ton fichier Loki
+
+    Corriger automatiquement ton fichier Loki
+
+J’attends ton cat -n /opt/KING-AO/monitoring/loki-config.yml.
+
+
+docker compose down
+docker compose pull
+docker compose up -d
+docker logs kingao-loki --tail 50
+
+----------------------FIN -------------
+🧱 1. Architecture : comment les données sont stockées
+📦 boltdb‑shipper (Loki 2.x)
+
+    Stocke les index dans des fichiers BoltDB (SQLite‑like)
+
+    Stocke les chunks dans un filesystem ou un object store
+
+    Le compactor fusionne les index pour réduire le nombre de fichiers
+
+    Architecture simple, mais pas optimisée pour très gros volumes
+
+👉 C’est un backend historique, stable, fiable.
+🚀 TSDB (Loki 3.x)
+
+    Stocke les données dans un format Time Series Database, comme Prometheus
+
+    Index + chunks fusionnés dans des blocs TSDB
+
+    Beaucoup moins de fichiers
+
+    Beaucoup plus rapide pour les requêtes
+
+    Beaucoup plus efficace pour la compression
+
+    Beaucoup plus scalable
+
+👉 C’est le backend moderne, conçu pour les gros clusters.
+⚡ 2. Performances
+boltdb‑shipper
+
+    Bon pour petits et moyens volumes
+
+    Latence correcte
+
+    Index parfois fragmentés → requêtes plus lentes
+
+    Beaucoup de petits fichiers → surcharge I/O
+
+TSDB
+
+    Très rapide pour les requêtes
+
+    Compression bien meilleure
+
+    Beaucoup moins de fichiers → moins de surcharge disque
+
+    Optimisé pour ingestion massive
+
+👉 TSDB est beaucoup plus performant.
+📈 3. Scalabilité
+boltdb‑shipper
+
+    Scalabilité limitée
+
+    Convient à 1 à 3 nœuds
+
+    Pas idéal pour des clusters géants
+
+TSDB
+
+    Scalabilité horizontale
+
+    Conçu pour des clusters Loki distribués
+
+    Supporte des volumes énormes
+
+👉 TSDB est fait pour les gros environnements.
+🔒 4. Fiabilité / maturité
+boltdb‑shipper
+
+    Très stable
+
+    Utilisé en production partout
+
+    Peu de surprises
+
+TSDB
+
+    Nouveau backend
+
+    Encore en release candidate
+
+    Pas encore publié sur Docker Hub
+
+    Quelques bugs encore en cours de correction
+
+👉 TSDB n’est pas encore recommandé pour les petites installations.
+🧩 5. Complexité de configuration
+boltdb‑shipper
+
+    Simple
+
+    Peu de paramètres
+
+    Facile à déployer
+
+TSDB
+
+    Plus complexe
+
+    Nécessite compactor TSDB
+
+    Nécessite un schema TSDB
+
+    Nécessite un storage TSDB
+
+    Nécessite Loki 3.x
+
+👉 TSDB demande plus de travail.
+🎯 6. Quand utiliser quoi ?
+✔ boltdb‑shipper (Loki 2.9.3)
+
+Utilise-le si :
+
+    tu veux de la stabilité
+
+    tu veux un stack simple
+
+    tu veux éviter les bugs
+
+    tu n’as pas des volumes énormes
+
+    tu veux un Loki qui démarre du premier coup
+
+👉 C’est ton cas aujourd’hui.
+✔ TSDB (Loki 3.x)
+
+Utilise-le si :
+
+    tu as beaucoup de logs
+
+    tu veux des requêtes plus rapides
+
+    tu veux un backend moderne
+
+    tu veux un cluster Loki distribué
+
+    tu veux la meilleure compression
+
+👉 On l’installera quand Loki 3.x sera officiellement publié.
+🧱 7. Résumé ultra simple
+Critère	boltdb‑shipper	TSDB
+Stabilité	⭐⭐⭐⭐⭐	⭐⭐⭐
+Performance	⭐⭐⭐	⭐⭐⭐⭐⭐
+Scalabilité	⭐⭐⭐	⭐⭐⭐⭐⭐
+Complexité	⭐⭐	⭐⭐⭐⭐
+Disponibilité Docker Hub	✔	❌ (pas encore)
+Recommandé aujourd’hui	✔	❌
+🎯 Conclusion
+
+Tu as fait le bon choix :
+👉 On reste sur Loki 2.9.3 + boltdb‑shipper (stable)
+👉 On installera TSDB quand Loki 3.x sera officiellement publié sur Docker Hub
+
+Tu veux que je te prépare le futur fichier TSDB pour Loki 3.x (pour être prêt le jour de la release) ou on reste sur la version stable pour l’instant ?
+
+
+--------------------------------------------------------
+
+🚀 Et quand Loki 3.x sortira officiellement ?
+
+Je serai là pour te préparer :
+
+    un docker-compose Loki 3.x TSDB
+
+    une config TSDB optimisée
+
+    un compactor TSDB
+
+    une migration propre 2.9.3 → 3.x
+
+    une vérification Promtail + Grafana
+
+Tu n’auras plus à deviner, ni à tester au hasard.
+🔗 Quand tu voudras reprendre le sujet TSDB, tu pourras revenir avec :
+
+    Reprendre TSDB quand Loki 3.x sortira
+
+On avance étape par étape, proprement, sans douleur.
+on relance tout pour vois si restarting
+
+Parfait, on relance tout — mais cette fois avec la config stable Loki 2.9.3, donc tu vas enfin voir un stack qui démarre sans “Restarting”.
+
+Je te fais un point clair, rapide, utile, sans te refaire tourner en rond.
+🎯 Ce qui doit se passer maintenant
+
+Avec :
+
+    image: grafana/loki:2.9.3
+
+    backend boltdb‑shipper
+
+    schema v11
+
+    compactor simple
+
+    filesystem classique
+
+👉 Loki doit démarrer du premier coup.
+
+Si tu relances tout maintenant, tu dois voir :
+Code
+
+STATUS: Up
+
+et plus jamais :
+Code
+
+Restarting (1)
+
+🔥 Relance propre (la bonne séquence)
+Code
+
+docker compose down
+docker compose pull
+docker compose up -d
+docker ps
+docker logs kingao-loki --tail 50
+
+Tu vas voir immédiatement si Loki est stable.
+🧱 Ce que tu dois vérifier dans docker ps
+
+Tu dois voir :
+Code
+
+kingao-loki   Up 5 seconds
+
+Pas :
+Code
+
+Restarting (1)
+
+📌 Si Loki redémarre encore
+
+Alors ce n’est plus la version, mais :
+
+    un fichier de config encore en TSDB
+
+    un vieux fichier dans le volume
+
+    un cache Loki corrompu
+
+    un index incompatible
+
+Dans ce cas, on fait un reset propre du volume Loki :
+Code
+
+docker compose down
+sudo rm -rf /var/lib/docker/volumes/monitoring_loki-data/_data/*
+docker compose up -d
+
+👉 Ça remet Loki à zéro, propre, sans données anciennes.
+🎯 Tu peux relancer maintenant
+
+Et tu me dis simplement :
+
+    Up → parfait
+
+    Restarting → on nettoie le volume et c’est réglé
+
+🔗 Liens utiles pour la suite
+
+    Vérifier les logs Loki
+
+    Nettoyer le volume Loki
+
+    Stabiliser tout le stack
+
+Relance, et dis-moi ce que donne docker ps.
+
+
+
+#+ arborescence 
+#!/bin/bash
+
+echo "📁 Création arborescence KING-AO..."
+
+# Racine
+mkdir -p KING-AO
+cd KING-AO
+
+# Modules
+mkdir -p modules/eparvier-metier
+mkdir -p modules/kingdomaine
+
+touch modules/eparvier-metier/Dockerfile
+touch modules/kingdomaine/Dockerfile
+touch modules/kingdomaine/README.md
+
+# Actions METIER
+mkdir -p actions/metier
+touch actions/metier/start.sh
+touch actions/metier/stop.sh
+touch actions/metier/status.sh
+touch actions/metier/logs.sh
+touch actions/metier/rebuild.sh
+touch actions/metier/sync.sh
+
+# Actions KINGDOMAINE
+mkdir -p actions/kingdomaine
+touch actions/kingdomaine/start.sh
+touch actions/kingdomaine/stop.sh
+touch actions/kingdomaine/status.sh
+touch actions/kingdomaine/logs.sh
+touch actions/kingdomaine/rebuild.sh
+touch actions/kingdomaine/sync.sh
+
+# Actions orchestrateur
+mkdir -p actions/orchestrator
+touch actions/orchestrator/menu.sh
+touch actions/orchestrator/cockpit.sh
+touch actions/orchestrator/utils.sh
+
+# Cockpit HTML
+mkdir -p cockpit
+touch cockpit/index.html
+touch cockpit/kingdomaine.html
+touch cockpit/metier.html
+
+# Docs
+mkdir -p docs
+touch docs/kingdomaine-plan.md
+touch docs/architecture.md
+
+# Logs + config
+mkdir -p logs
+mkdir -p config
+
+# Script principal KING-AO
+touch KING-AO.sh
+
+echo "✅ Arborescence KING-AO + KINGDOMAINE créée."
+
+
+KING-AO/
+ ├── monitoring/
+ │     ├── docker-compose.yml
+ │     ├── prometheus.yml
+ │     ├── loki-config.yml
+ │     └── promtail-config.yml
+
+
+
+
+
+🎯 Takeaway
+Tu peux mettre ta config KING‑AO dans l’un des deux emplacements valides :
+
+✔ /etc/nginx/nginx.conf
+(le fichier principal)
+
+✔ /etc/nginx/conf.d/kingao.conf
+(fichier dédié, recommandé)
+
+👉 Les deux fonctionnent.
+👉 Le plus propre = conf.d.
+
+🧩 Méthode recommandée (PRO)
+1️⃣ Créer ton fichier KING‑AO dédié
+Code
+sudo nano /etc/nginx/conf.d/kingao.conf
+Tu colles la config KING‑AO dedans.
+
+2️⃣ Vérifier la syntaxe
+Code
+sudo nginx -t
+Tu dois voir :
+
+Code
+syntax is ok
+test is successful
+3️⃣ Recharger NGINX
+Code
+sudo systemctl reload nginx
+🟦 Méthode alternative (si ton NAS utilise un fichier unique)
+Si ton système utilise un seul fichier :
+
+Code
+sudo nano /etc/nginx/nginx.conf
+Tu ajoutes le bloc server KING‑AO à la fin du fichier.
+
+🟩 Résumé cockpit-grade
+Emplacement	Avantage	Commande
+/etc/nginx/conf.d/kingao.conf	propre, modulaire, pro	nano /etc/nginx/conf.d/kingao.conf
+/etc/nginx/nginx.conf	fichier unique	nano /etc/nginx/nginx.conf
+
+
+👉 Les deux sont valides.
+👉 conf.d est la méthode KING‑AO recommandée.
+
+
+
+
+

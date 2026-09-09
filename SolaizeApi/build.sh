@@ -12,7 +12,7 @@ dotnet build ../Solaize.Shared/Solaize.Shared.csproj -c Release
 dotnet publish -c Release -o out
 
 # Build Docker image
-docker build -f ../Dockerfile.Api -t solaizeapi:$GIT_HASH .
+docker build -f ../Dockerfile.Api -t solaizeapi:$GIT_HASH ..
 
 # Tag latest
 docker tag solaizeapi:$GIT_HASH solaizeapi:latest

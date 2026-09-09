@@ -1,0 +1,58 @@
+#!/bin/bash
+
+echo "📁 Création arborescence KING-AO..."
+
+# Racine
+mkdir -p KING-AO
+cd KING-AO
+
+# Modules
+mkdir -p modules/eparvier-metier
+mkdir -p modules/kingdomaine
+
+touch modules/eparvier-metier/Dockerfile
+touch modules/kingdomaine/Dockerfile
+touch modules/kingdomaine/README.md
+
+# Actions METIER
+mkdir -p actions/metier
+touch actions/metier/start.sh
+touch actions/metier/stop.sh
+touch actions/metier/status.sh
+touch actions/metier/logs.sh
+touch actions/metier/rebuild.sh
+touch actions/metier/sync.sh
+
+# Actions KINGDOMAINE
+mkdir -p actions/kingdomaine
+touch actions/kingdomaine/start.sh
+touch actions/kingdomaine/stop.sh
+touch actions/kingdomaine/status.sh
+touch actions/kingdomaine/logs.sh
+touch actions/kingdomaine/rebuild.sh
+touch actions/kingdomaine/sync.sh
+
+# Actions orchestrateur
+mkdir -p actions/orchestrator
+touch actions/orchestrator/menu.sh
+touch actions/orchestrator/cockpit.sh
+touch actions/orchestrator/utils.sh
+
+# Cockpit HTML
+mkdir -p cockpit
+touch cockpit/index.html
+touch cockpit/kingdomaine.html
+touch cockpit/metier.html
+
+# Docs
+mkdir -p docs
+touch docs/kingdomaine-plan.md
+touch docs/architecture.md
+
+# Logs + config
+mkdir -p logs
+mkdir -p config
+
+# Script principal KING-AO
+touch KING-AO.sh
+
